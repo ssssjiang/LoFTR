@@ -63,7 +63,7 @@ if __name__ == '__main__':
         '--save_input', action='store_true',
         help='Save the input images to a video (for gathering repeatable input source).')
     parser.add_argument(
-        '--skip_frames', type=int, default=1, 
+        '--skip_frames', type=int, default=1,
         help="Skip frames from webcam input.")
     parser.add_argument(
         '--top_k', type=int, default=2000, help="The max vis_range (please refer to the code).")
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         raise ValueError('Cannot specify more than two integers for --resize')
 
     if torch.cuda.is_available():
-        device = 'cuda' 
+        device = 'cuda'
     else:
         raise RuntimeError("GPU is required to run this demo.")
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # Configure I/O
     if opt.save_video:
         print('Writing video to loftr-matches.mp4...')
-        writer = cv2.VideoWriter('loftr-matches.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 15, (640*2 + 10, 480))
+        writer = cv2.VideoWriter('loftr-matches.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 15, (640 * 2 + 10, 480))
     if opt.save_input:
         print('Writing video to demo-input.mp4...')
         input_writer = cv2.VideoWriter('demo-input.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 15, (640, 480))
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     frame, ret = vs.next_frame()
     assert ret, 'Error when reading the first frame (try different --input?)'
 
-    frame_id = 0  
+    frame_id = 0
     last_image_id = 0
     frame_tensor = frame2tensor(frame, device)
     last_data = {'image0': frame_tensor}
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     if not opt.no_display:
         window_name = 'LoFTR Matches'
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(window_name, (640*2, 480))
+        cv2.resizeWindow(window_name, (640 * 2, 480))
     else:
         print('Skipping visualization, will not show a GUI.')
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
             # print("Skipping frame.")
             continue
         if opt.save_input:
-            inp = np.stack([frame]*3, -1)
+            inp = np.stack([frame] * 3, -1)
             inp_rgb = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
             input_writer.write(inp_rgb)
         if not ret:
@@ -196,6 +196,7 @@ if __name__ == '__main__':
             if opt.save_video:
                 writer.write(out)
             cv2.imshow('LoFTR Matches', out)
+            #     cv2.waitKey(0)
             key = chr(cv2.waitKey(1) & 0xFF)
             if key == 'q':
                 if opt.save_video:
@@ -205,7 +206,7 @@ if __name__ == '__main__':
                 vs.cleanup()
                 print('Exiting...')
                 break
-            elif key == 'n':  
+            elif key == 'n':
                 last_data['image0'] = frame_tensor
                 last_frame = frame
                 last_image_id = (vs.i - 1)
@@ -213,16 +214,16 @@ if __name__ == '__main__':
             elif key in ['d', 'f']:
                 if key == 'd':
                     if vis_range[0] >= 0:
-                       vis_range[0] -= 200
-                       vis_range[1] -= 200
-                if key =='f':
+                        vis_range[0] -= 200
+                        vis_range[1] -= 200
+                if key == 'f':
                     vis_range[0] += 200
                     vis_range[1] += 200
                 print(f'\nChanged the vis_range to {vis_range[0]}:{vis_range[1]}')
             elif key in ['c', 'v']:
                 if key == 'c':
                     vis_range[1] -= 50
-                if key =='v':
+                if key == 'v':
                     vis_range[1] += 50
                 print(f'\nChanged the vis_range[1] to {vis_range[1]}')
         elif opt.output_dir is not None:
@@ -234,7 +235,6 @@ if __name__ == '__main__':
             raise ValueError("output_dir is required when no display is given.")
         timer.update('viz')
         timer.print()
-
 
     cv2.destroyAllWindows()
     vs.cleanup()

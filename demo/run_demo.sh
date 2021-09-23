@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 set -e
 # set -x
 
@@ -9,21 +9,22 @@ if [ ! -f utils.py ]; then
 fi
 
 # Use webcam 0 as input source. 
-input=0
+# input=0
 # or use a pre-recorded video given the path.
 # input=/home/sunjiaming/Downloads/scannet_test/$scene_name.mp4
-
+# use image file
+input=../assets/freiburg_sequence/
 # Toggle indoor/outdoor model here.
-model_ckpt=../weights/indoor_ds.ckpt
+model_ckpt=../weights/indoor_ds_new.ckpt
 # model_ckpt=../weights/outdoor_ds.ckpt
 
 # Optionally assign the GPU ID.
 # export CUDA_VISIBLE_DEVICES=0
 
 echo "Running LoFTR demo.."
-eval "$(conda shell.bash hook)"
-conda activate loftr
-python demo_loftr.py --weight $model_ckpt --input $input
+#eval "$(conda shell.bash hook)"
+#conda activate loftr
+python demo_loftr.py --weight $model_ckpt --input $input --resize 320 240
 # To save the input video and output match visualizations.
 # python demo_loftr.py --weight $model_ckpt --input $input --save_video --save_input
 
