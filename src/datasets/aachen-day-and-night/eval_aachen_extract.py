@@ -25,12 +25,14 @@ torch.set_grad_enabled(False)
 
 def load_image_data(image_name, image_path, grayscale, resize, resize_float):
     image = io.read_image(image_path, grayscale)
+    raw_image = image
     image = image.astype(np.float32)
 
     size = image.shape[:2][::-1]
     w, h = size
     w_new, h_new = process_resize(w, h, resize)
 
+    scale_w, scale_h = (w / w_new), (h / h_new)
     if resize_float:
         image = cv2.resize(image.astype('float32'), (w_new, h_new))
     else:
@@ -51,7 +53,7 @@ def load_image_data(image_name, image_path, grayscale, resize, resize_float):
     #     'image': image,
     #     'original_size': np.array(size),
     # }
-    return image
+    return raw_image, image, scale_w, scale_h
 
 
 if __name__ == "__main__":
@@ -151,8 +153,8 @@ if __name__ == "__main__":
         image_0, image_1 = images / name0, images / name1
         # print(image_0, image_1)
 
-        src = load_image_data(name0, image_0, True, opt.resize, opt.resize_float)
-        tgt = load_image_data(name1, image_1, True, opt.resize, opt.resize_float)
+        raw_img0, src, scale_w_0, scale_h_0 = load_image_data(name0, image_0, True, opt.resize, opt.resize_float)
+        raw_img1, tgt, scale_w_1, scale_h_1 = load_image_data(name1, image_1, True, opt.resize, opt.resize_float)
 
         src_tensor, tgt_tensor = frame2tensor(src, device), frame2tensor(tgt, device)
         data = {'image0': src_tensor, 'image1': tgt_tensor}
@@ -163,6 +165,11 @@ if __name__ == "__main__":
         mkpts0 = data['mkpts0_f'].cpu().numpy()[vis_range[0]:vis_range[1]]
         mkpts1 = data['mkpts1_f'].cpu().numpy()[vis_range[0]:vis_range[1]]
         mconf = data['mconf'].cpu().numpy()[vis_range[0]:vis_range[1]]
+
+        mkpts0[:, 0] = (mkpts0[:, 0] + 0.5) * scale_w_0 - 0.5
+        mkpts0[:, 1] = (mkpts0[:, 1] + 0.5) * scale_h_0 - 0.5
+        mkpts1[:, 0] = (mkpts1[:, 0] + 0.5) * scale_w_1 - 0.5
+        mkpts1[:, 1] = (mkpts1[:, 1] + 0.5) * scale_h_1 - 0.5
 
         # Normalize confidence.
         if len(mconf) > 0:
@@ -194,7 +201,7 @@ if __name__ == "__main__":
                 'Image Pair: ' + name0 + ' , ' + name1
             ]
             out = make_matching_plot_fast(
-                src, tgt, mkpts0, mkpts1, mkpts0, mkpts1, color, text,
+                raw_img0, raw_img1, mkpts0, mkpts1, mkpts0, mkpts1, color, text,
                 path=None, show_keypoints=False, small_text=small_text)
             cv2.imshow('LoFTR Matches', out)
             # cv2.waitKey(0)
